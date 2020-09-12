@@ -26,6 +26,8 @@ moneyline <- function(lambda, mu)
   point_spread(0, lambda, mu)
 }
 
+
+
 #' The chance of a given point spread under the Skellam model
 #'
 #' @param k the size of the point spread (in the direction of the favorite)
@@ -35,13 +37,12 @@ moneyline <- function(lambda, mu)
 #'
 #' @description {The probability of the event \eqn{\{X+Y>k\}} or its complement.}
 #' @return numeric or vector
-#' @importFrom sde indicator
 #' @importFrom stats ppois rpois
 #' @export overunder
 overunder <- function(k, lambda, mu, over = TRUE)
 {
-  indicator(over)*(1-ppois(k, lambda = lambda+mu))+
-    (1-indicator(over))*ppois(k, lambda = lambda+mu)
+  ifelse(over, 1, 0)*(1-ppois(k, lambda = lambda+mu))+
+    (1-ifelse(over, 1, 0))*ppois(k, lambda = lambda+mu)
 }
 
 
