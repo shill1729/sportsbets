@@ -10,4 +10,8 @@ Description: For modeling and analysis of sports betting including
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Imports:
+    httr,
+    KellyCriterion,
+    xml2
 RoxygenNote: 7.1.1
