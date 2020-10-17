@@ -20,6 +20,8 @@ espn_nfl_scrape <- function(team)
   # The teams record
   record <- unlist(xml2::as_list(lis[15]))
   record <- as.numeric(unlist(strsplit(record, "-")))
+  # Total points
+  total_points <- as.numeric(unlist(xml2::as_list(tbs[length(tbs)-83])))
   # The teams number of tds
   total_tds <- as.numeric(unlist(xml2::as_list(tbs[length(tbs)-86])))
   # Field-goal good--attempts
@@ -31,6 +33,7 @@ espn_nfl_scrape <- function(team)
   scraped <- list(record = record, total_tds = total_tds, fg_stats = fg_stats)
   mtds <- total_tds/sum(record)
   mfgs <- fg_stats[1]/sum(record)
-  means <- c(tds = mtds, fgs = mfgs)
+  mextras <- (total_points-total_tds*6-2*fg_stats[1])/sum(record)
+  means <- c(tds = mtds, fgs = mfgs, extras = mextras)
   return(list(scraped = scraped, means = means))
 }

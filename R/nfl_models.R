@@ -18,14 +18,13 @@ nfl_total_cdf <- function(line, means, n = 10^6)
   # mean touchdowns and (good) field-goals
   mtd <- means[1]
   mfg <- means[2]
-  # tds, fgs, safeties, 1 point, 2 point conversions
-  point_coef <- c(6, 2, 2, 1, 2)
+  mextras <- means[3]
+  # tds, fgs, safeties and everything else lumped into 1
+  point_coef <- c(6, 2, 1)
   r1 <- rpois(n, mtd)
   r2 <- rpois(n, mfg)
-  r3 <- rpois(n, 1) # assume 1 safety on average per game (per both teams)
-  r4 <- rpois(n, 2) # assume 2 1 point on top of td's per game per both teams
-  r5 <- rpois(n, 1) # assume 1 2 points on top of td's per game per both teams
-  r <- cbind(r1, r2, r3, r4, r5)
+  r3 <- rpois(n, mextras)
+  r <- cbind(r1, r2, r3)
   # Linear combinations of Poisson RVs
   ps <- apply(r, 1, function(x) t(point_coef)%*%x)
   # Probabilities of events for Total
@@ -49,22 +48,18 @@ nfl_total_cdf <- function(line, means, n = 10^6)
 nfl_moneyline_cdf <- function(fav_means, underdog_means, n = 10^6)
 {
   # tds, fgs, safeties, 1 point, 2 point conversions
-  point_coef <- c(6, 2, 2, 1, 2)
+  point_coef <- c(6, 2, 1)
   r1 <- rpois(n, fav_means[1])
   r2 <- rpois(n, fav_means[2])
-  r3 <- rpois(n, 0.5) # assume 1 safety on average per game (per both teams)
-  r4 <- rpois(n, 1) # assume 2 1 point on top of td's per game per both teams
-  r5 <- rpois(n, 0.5) # assume 1 2 points on top of td's per game per both teams
-  r_fav <- cbind(r1, r2, r3, r4, r5)
+  r3 <- rpois(n, fav_means[3])
+  r_fav <- cbind(r1, r2, r3)
   ps_fav <- apply(r_fav, 1, function(x) t(point_coef)%*%x)
 
   # Underdog team
   r1 <- rpois(n, underdog_means[1])
   r2 <- rpois(n, underdog_means[2])
-  r3 <- rpois(n, 0.5) # assume 1 safety on average per game (per both teams)
-  r4 <- rpois(n, 1) # assume 2 1 point on top of td's per game per both teams
-  r5 <- rpois(n, 0.5) # assume 1 2 points on top of td's per game per both teams
-  r_und <- cbind(r1, r2, r3, r4, r5)
+  r3 <- rpois(n, underdog_means[3]) # assume 1 safety on average per game (per both teams)
+  r_und <- cbind(r1, r2, r3)
   ps_und <- apply(r_und, 1, function(x) t(point_coef)%*%x)
   fav_win <- mean((ps_fav > ps_und))
   und_win <- mean((ps_fav <= ps_und))
