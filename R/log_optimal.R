@@ -46,3 +46,25 @@ log_optimal_moneyline_bet <- function(teams, fav_minus, underdog_plus, n = 10^5)
 
 }
 
+#' Kelly-criterion for moneyline bets
+#'
+#' @param teams vector of team names
+#' @param spread the point-spread
+#' @param n number of variates to use in Monte-Carlo estimations
+#'
+#' @description {Log optimal wager strategy for moneyline betting. Based on
+#' linear combination of Poisson RVs model for points.}
+#' @return list
+#' @export log_optimal_spread_bet
+log_optimal_spread_bet <- function(teams, spread, n = 10^5)
+{
+  dat1 <- espn_nfl_scrape(teams[1])
+  dat2 <- espn_nfl_scrape(teams[2])
+  spread_estimates <- nfl_spread_cdf(dat1$means, dat2$means, spread, n = n)
+  m_und <- KellyCriterion::kelly_binary(spread_estimates$underdog, a = 100/110, 1)
+  m_fav <- KellyCriterion::kelly_binary(spread_estimates$fav, a = 100/110, 1)
+  optimal_bets <- list(spread = c(fav = m_fav, underdog = m_und))
+  return(list(estimates = spread_estimates, bets = optimal_bets))
+
+}
+

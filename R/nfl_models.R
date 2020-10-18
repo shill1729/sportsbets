@@ -66,3 +66,37 @@ nfl_moneyline_cdf <- function(fav_means, underdog_means, n = 10^6)
   return(data.frame(fav = fav_win, underdog = und_win))
 
 }
+
+#' Monte-Carlo estimates of point-spread distribution
+#'
+#' @param fav_means vector of mean number of touchdowns and (good) field goals of favorite team
+#' @param underdog_means vector of mean number of touchdowns and (good) field goals of underdog team
+#' @param spread the point spread to exceed
+#' @param n number of variates to use in Monte-Carlo estimate
+#'
+#' @description {Compute via Monte-Carlo simulations the probability of point-spread events
+#' for a given favorite and underdog team. See the details documentation for the total cdf for
+#' more details on the model.}
+#' @return data.frame of favorite win chance and underdog win(+tie) chance.
+#' @export nfl_spread_cdf
+nfl_spread_cdf <- function(fav_means, underdog_means, spread = 1.5, n = 10^6)
+{
+  # tds, fgs, safeties, 1 point, 2 point conversions
+  point_coef <- c(6, 2, 1)
+  r1 <- rpois(n, fav_means[1])
+  r2 <- rpois(n, fav_means[2])
+  r3 <- rpois(n, fav_means[3])
+  r_fav <- cbind(r1, r2, r3)
+  ps_fav <- apply(r_fav, 1, function(x) t(point_coef)%*%x)
+
+  # Underdog team
+  r1 <- rpois(n, underdog_means[1])
+  r2 <- rpois(n, underdog_means[2])
+  r3 <- rpois(n, underdog_means[3]) # assume 1 safety on average per game (per both teams)
+  r_und <- cbind(r1, r2, r3)
+  ps_und <- apply(r_und, 1, function(x) t(point_coef)%*%x)
+  fav_win <- mean((ps_fav - ps_und > spread))
+  und_win <- mean((ps_und - ps_fav > -spread ))
+  return(data.frame(fav = fav_win, underdog = und_win))
+
+}
