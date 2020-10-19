@@ -5,7 +5,7 @@
 #'
 #' @description {Compute bets that maximize log wealth for NFL wagers from ESPN
 #' schedule.}
-#' @return list of the ESPN data data.frame and optimal allocations under Kelly-Criterion
+#' @return list of the ESPN data data.frame, optimal allocations under Kelly-Criterion, and growth-rates
 #' @export nfl_kelly
 nfl_kelly <- function(tdat = NULL, n = 5*10^4)
 {
@@ -14,6 +14,7 @@ nfl_kelly <- function(tdat = NULL, n = 5*10^4)
     tdat <- espn_nfl_line()
   }
   optimal_bets <- list()
+  growth_rates <- list()
   for(i in 1:nrow(tdat))
   {
 
@@ -32,11 +33,21 @@ nfl_kelly <- function(tdat = NULL, n = 5*10^4)
                        ov = KellyCriterion::kelly_binary(ou_est$over, a = 100/110, 1),
                        un = KellyCriterion::kelly_binary(ou_est$under, a = 100/110, 1)
     )
+    rates <- data.frame(mlf = KellyCriterion::entropy_binary(100/abs(tdat$fav[i]), b = 1, ml_est$fav),
+                        mlu = KellyCriterion::entropy_binary(abs(tdat$underdog[i])/100, b = 1, ml_est$underdog),
+                        spreadf = KellyCriterion::entropy_binary(a = 100/110, 1, spread_est$fav),
+                        spreadu = KellyCriterion::entropy_binary(a = 100/110, 1, spread_est$und),
+                        ov = KellyCriterion::entropy_binary(a = 100/110, 1, ou_est$over),
+                        un = KellyCriterion::entropy_binary(a = 100/110, 1, ou_est$under)
+    )
     optimal_bets[[i]] <- bets
+    growth_rates[[i]] <- rates
     Sys.sleep(0.2)
   }
   optimal_bets <- as.data.frame(do.call(rbind, optimal_bets))
   optimal_bets <- data.frame(favs = tdat$favs, underdogs = tdat$underdogs, optimal_bets)
-  return(list(data = tdat, model = optimal_bets))
+  growth_rates <- as.data.frame(do.call(rbind, growth_rates))
+  growth_rates <- data.frame(favs = tdat$favs, underdogs = tdat$underdogs, growth_rates)
+  return(list(data = tdat, model = optimal_bets, growth = growth_rates))
 }
 
