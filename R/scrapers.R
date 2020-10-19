@@ -8,7 +8,7 @@
 #' @export espn_nfl_scrape
 espn_nfl_scrape <- function(team)
 {
-  print(paste("Getting", team, "data"))
+  # print(paste("Getting", team, "data"))
   url <- "https://www.espn.com/nfl/team/stats/_/type/team/name/"
   url <- paste(url, team, sep = "")
   # url <- "https://www.pro-football-reference.com/teams/buf/2020.htm"

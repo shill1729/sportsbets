@@ -97,12 +97,11 @@ espn_nfl_line <- function()
   # Convert all to numeric
   dat[, -c(1, 2)] <- apply(dat[,-c(1, 2)], 2, as.numeric)
   dat$sentiment <- ifelse(dat$live_lines < 0, "favorite", "underdog")
-  print(dat)
+  # print(dat)
   # Now we are going to transform the data-set game-wise to be suitable to our log optimal functions
   # Since we do not want to lose order of the matchups, best to approach iteratively unless
   # you are sure about a more clever way.
   dat[1, ]$sentiment
-
   favs <- list()
   underdogs <- list()
   game_line <- list()
