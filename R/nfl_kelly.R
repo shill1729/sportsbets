@@ -18,13 +18,13 @@ nfl_kelly <- function(tdat = NULL, n = 5*10^4)
   {
 
     matchup <- c(team_endpoint(tdat$favs[i]),  team_endpoint(tdat$underdogs[i]))
-    print(matchup)
+    # print(matchup)
     fav_stat <- espn_nfl_scrape(matchup[1])
     und_stat <- espn_nfl_scrape(matchup[2])
     ml_est <- nfl_moneyline_cdf(fav_stat$means, und_stat$means, n)
     spread_est <- nfl_spread_cdf(fav_stat$means, und_stat$means, abs(tdat$spread[i]), n)
     ou_est <- nfl_total_cdf(line = tdat$line[i], means = fav_stat$means+und_stat$means, n)
-    print(list(fav_stat, und_stat, ml = ml_est, spread = spread_est, ou = ou_est))
+    # print(list(fav_stat, und_stat, ml = ml_est, spread = spread_est, ou = ou_est))
     bets <- data.frame(mlf = KellyCriterion::kelly_binary(ml_est$fav, 100/abs(tdat$fav[i]), b = 1),
                        mlu = KellyCriterion::kelly_binary(ml_est$underdog, abs(tdat$underdog[i])/100, b = 1),
                        spreadf = KellyCriterion::kelly_binary(spread_est$fav, a = 100/110, 1),

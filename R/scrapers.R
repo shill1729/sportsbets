@@ -36,6 +36,6 @@ espn_nfl_scrape <- function(team)
   mextras <- (total_points-total_tds*6-2*fg_stats[1])/sum(record)
   means <- c(tds = mtds, fgs = mfgs, extras = mextras, expected_points = total_points/sum(record))
 
-  print(means)
+  # print(means)
   return(list(scraped = scraped, means = means))
 }
