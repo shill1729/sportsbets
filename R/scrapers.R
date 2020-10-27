@@ -39,3 +39,4 @@ espn_nfl_scrape <- function(team)
   # print(means)
   return(list(scraped = scraped, means = means))
 }
+
