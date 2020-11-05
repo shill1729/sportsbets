@@ -68,3 +68,51 @@ log_optimal_spread_bet <- function(teams, spread, n = 10^5)
 
 }
 
+#' Log optimal bet for an independent but not identically distributed sequence
+#'
+#' @param chances sequence of chances of winning the bet
+#' @param a payout, default 100
+#' @param b risk, default 110
+#'
+#' @description {Log optimal growth for a finite sequence of bets with different
+#' probabilities.}
+#' @return numeric
+#' @export logOptimalWeekBet
+logOptimalWeekBet <- function(chances, a = 100/110, b = 1)
+{
+  N <- length(chances)
+  p <- sum(chances)
+  return(((a+b)*p-b*N)/(N*a*b))
+}
+
+#' Maximize log-growth of a sequence of bets with different chances
+#'
+#' @param tdat data returned from \code{espn_nfl_line}
+#' @param n number of variates
+#'
+#' @description {Work in progress model for non-identical chance bets.}
+#' @return list
+#' @export logOptWeekTotal
+logOptWeekTotal <- function(tdat = NULL, n = 5*10^4)
+{
+  if(is.null(tdat))
+  {
+    tdat <- espn_nfl_line()
+  }
+  over_chances <- matrix(0, nrow = nrow(tdat))
+  under_chances <- matrix(0, nrow = nrow(tdat))
+  for(i in 1:nrow(tdat))
+  {
+    matchup <- c(team_endpoint(tdat$favs[i]),  team_endpoint(tdat$underdogs[i]))
+    # print(matchup)
+    fav_stat <- espn_nfl_scrape(matchup[1])
+    und_stat <- espn_nfl_scrape(matchup[2])
+    ou_est <- nfl_total_cdf(line = tdat$line[i], means = fav_stat$means+und_stat$means, n)
+    over_chances[i] <- ou_est$over
+    under_chances[i] <- ou_est$under
+    Sys.sleep(0.2)
+  }
+  output <- data.frame(overOptimal = logOptimalWeekBet(over_chances), underOptimal = logOptimalWeekBet(under_chances))
+  return(list(data = tdat, model_over = over_chances, model_under = under_chances, bet = output))
+
+}

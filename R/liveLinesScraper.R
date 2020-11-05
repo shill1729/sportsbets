@@ -73,6 +73,7 @@ espn_nfl_line <- function()
 
   # Get all of the teams scheduled
   teamsScheduled <- list()
+  # index arithmetic is so trivial, there is little point in commenting on it...
   for(i in 30+2*0:((length(tbs)-1)/6))
   {
 
@@ -89,20 +90,20 @@ espn_nfl_line <- function()
 
   }
   teamsScheduled <- unlist(teamsScheduled)
-  dat <- data.frame(teamsScheduled, records, live_lines, live_opens, live_ml, live_fpi)
+  # Open lines can often be blank, which NA's on as.numeric.
+  # dat <- data.frame(teamsScheduled, records, live_lines, live_opens, live_ml, live_fpi)
+  dat <- data.frame(teamsScheduled, records, live_lines, live_ml, live_fpi)
   # Data-formatting
   dat$live_fpi <- gsub("%", "", dat$live_fpi)
   # Convert to probabilities
   dat$live_fpi <- as.numeric(dat$live_fpi)/100
   # Convert all to numeric
   dat[, -c(1, 2)] <- apply(dat[,-c(1, 2)], 2, as.numeric)
-  dat <- dat[complete.cases(dat),]
   dat$sentiment <- ifelse(dat$live_lines < 0, "favorite", "underdog")
   # print(dat)
   # Now we are going to transform the data-set game-wise to be suitable to our log optimal functions
   # Since we do not want to lose order of the matchups, best to approach iteratively unless
   # you are sure about a more clever way.
-  dat[1, ]$sentiment
   favs <- list()
   underdogs <- list()
   game_line <- list()

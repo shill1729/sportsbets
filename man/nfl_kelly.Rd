@@ -12,7 +12,7 @@ nfl_kelly(tdat = NULL, n = 5 * 10^4)
 \item{n}{number of simulations}
 }
 \value{
-list of the ESPN data data.frame and optimal allocations under Kelly-Criterion
+list of the ESPN data data.frame, optimal allocations under Kelly-Criterion, and growth-rates
 }
 \description{
 {Compute bets that maximize log wealth for NFL wagers from ESPN
