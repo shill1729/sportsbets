@@ -99,8 +99,8 @@ espn_nfl_line <- function()
   dat$live_fpi <- as.numeric(dat$live_fpi)/100
   # Convert all to numeric
   dat[, -c(1, 2)] <- apply(dat[,-c(1, 2)], 2, as.numeric)
-  dat$sentiment <- ifelse(dat$live_lines < 0, "favorite", "underdog")
-  # print(dat)
+  dat$sentiment <- ifelse(dat$live_lines <= 0, "favorite", "underdog")
+  print(dat)
   # Now we are going to transform the data-set game-wise to be suitable to our log optimal functions
   # Since we do not want to lose order of the matchups, best to approach iteratively unless
   # you are sure about a more clever way.
@@ -124,7 +124,12 @@ espn_nfl_line <- function()
     {
       underdogs[[i]] <- dat[i, ]$teamsScheduled
       game_line[[i]] <- dat[i, ]$live_lines
-      game_und_ml[[i]] <- dat[i, ]$live_ml
+      if(dat[i, ]$live_ml < 0)
+      {
+        game_und_ml[[i]] <- 100
+      } else{
+        game_und_ml[[i]] <- dat[i, ]$live_ml
+      }
       game_und_fpi[[i]] <- dat[i, ]$live_fpi
     }
 
