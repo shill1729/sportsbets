@@ -68,43 +68,89 @@ log_optimal_spread_bet <- function(teams, spread, n = 10^5)
 
 }
 
-#' Log optimal bet for an independent but not identically distributed sequence
+#' Optimal allocations among many independent bets
 #'
-#' @param chances sequence of chances of winning the bet
-#' @param a payout, default 100
-#' @param b risk, default 110
+#' @param ps vector of chances
+#' @param a vector of win payouts
+#' @param b vector of risk payins
+#' @param restraint percentage of wealth to restrict to
 #'
-#' @description {Log optimal growth for a finite sequence of bets with different
-#' probabilities.}
-#' @return numeric
-#' @export logOptimalWeekBet
-logOptimalWeekBet <- function(chances, a = 100/110, b = 1)
+#' @description {Given independent alternatives to wager on on the same trial, going up to
+#' a percentage of one's bankroll, optimal allocations are computed via
+#' log-maximization of terminal wealth.}
+#' @return vector
+#' @export kelly_totals
+kelly_totals <- function(ps, a, b, restraint = 1)
 {
-  N <- length(chances)
-  p <- sum(chances)
-  return(((a+b)*p-b*N)/(N*a*b))
+  m <- length(ps)
+  l <- list()
+  print("Computing coefficients")
+  for(i in 1:m)
+  {
+    l[[i]] <- c(ps[i], 1-ps[i])
+  }
+  chance_coefs <- expand.grid(l)
+  chance_coefs <- apply(chance_coefs, 1, prod)
+
+
+  print("Computing log arguments")
+  ll <- rep(list(0:1), m)
+  outcomes <- 1-expand.grid(ll) # order is reversed
+  logargs <- 2*outcomes-1
+  for(i in 1:(2^m))
+  {
+    for(j in 1:m)
+    {
+      if(logargs[i, j] < 0)
+      {
+        logargs[i, j] <- -b[j]
+      } else if(logargs[i, j] > 0)
+      {
+        logargs[i, j] <- a[j]
+      }
+    }
+  }
+  # print(logargs)
+  # constrOptim *minimizes* functions, so we use negatives
+  g <- function(x)
+  {
+    r <- apply(as.matrix(logargs), 1, function(y) y%*%x)
+    return(-sum(chance_coefs*log(1+r)))
+  }
+
+  # -restraint for budget constraint (to get u cdot 1^T <= restraint), >0, -u>-1 for 0<u<1
+  bvec <- c(-restraint, rep(0, m), rep(-1, m))
+  # for row is 1s for budget equality constraint, then diag matrices
+  Amat <- cbind(matrix(rep(-1, m), nrow = m), diag(x = 1, m, m), diag(x = -1, m, m))
+  print("Optimizing")
+  kf <- stats::constrOptim(theta = rep(1/(m*3), m),
+                           f = g, grad = NULL, ui = t(Amat), ci = bvec)
+  print(-kf$value)
+  return(kf$par)
 }
 
-#' Maximize log-growth of a sequence of bets with different chances
+#' Compute chances of over/under for a given live line on NFL game week
 #'
 #' @param tdat data returned from \code{espn_nfl_line}
 #' @param n number of variates
 #'
-#' @description {Work in progress model for non-identical chance bets.}
+#' @description {A linear combination of Poisson RVs is used to model the points of each team.}
 #' @return list
-#' @export logOptWeekTotal
-logOptWeekTotal <- function(tdat = NULL, n = 5*10^4)
+#' @export weekTotalChances
+weekTotalChances <- function(tdat = NULL, n = 5*10^4)
 {
   if(is.null(tdat))
   {
+    print("Getting data from ESPN")
     tdat <- espn_nfl_line()
+
   }
   over_chances <- matrix(0, nrow = nrow(tdat))
   under_chances <- matrix(0, nrow = nrow(tdat))
   for(i in 1:nrow(tdat))
   {
     matchup <- c(team_endpoint(tdat$favs[i]),  team_endpoint(tdat$underdogs[i]))
-    # print(matchup)
+    print(matchup)
     fav_stat <- espn_nfl_scrape(matchup[1])
     und_stat <- espn_nfl_scrape(matchup[2])
     ou_est <- nfl_total_cdf(line = tdat$line[i], means = fav_stat$means+und_stat$means, n)
@@ -112,7 +158,44 @@ logOptWeekTotal <- function(tdat = NULL, n = 5*10^4)
     under_chances[i] <- ou_est$under
     Sys.sleep(0.2)
   }
-  output <- data.frame(overOptimal = logOptimalWeekBet(over_chances), underOptimal = logOptimalWeekBet(under_chances))
-  return(list(data = tdat, model_over = over_chances, model_under = under_chances, bet = output))
+  dat <- tdat[, c("favs", "underdogs", "line")]
+  dat$over <- as.numeric(over_chances)
+  dat$under <- as.numeric(under_chances)
+  return(dat)
 
 }
+
+#' Log optimal allocations among independent bets
+#'
+#' @param tdat scraped data from \code{espn_live_line}
+#' @param n number of trials in MC estimations
+#' @param restraint percentage of wealth to use
+#' @param wager wager to risk
+#' @param top how many games to bet on
+#'
+#' @description {Kelly-criterion applied to multiple independent bets per
+#' trial.}
+#' @return list of two data.frames \code{over} and \code{under}
+#' both containing the same column names except the last one.
+#' Contained is the model-estimate for the outcome together with the
+#' optimal fraction of wealth to bet.
+#' @export logOptimalTotals
+logOptimalTotals <- function(tdat = NULL, n = 5*10^4, restraint = 1, wager = 110, top = 2)
+{
+  w <- weekTotalChances(tdat, n)
+  a <- rep(100/wager, length(w$over))
+  b <- rep(1, length(w$over))
+
+  overEdge <- w[order(w$over, decreasing = TRUE), ]
+  underEdge <- w[order(w$under, decreasing = TRUE), ]
+  overEdge <- overEdge[1:top,]
+  underEdge <- underEdge[1:top, ]
+
+  okf <- kelly_totals(ps = overEdge$over, a = a, b = b, restraint)
+  ukf <- kelly_totals(ps = underEdge$under, a = a, b = b, restraint)
+  overEdge$kellyOver <- okf
+  underEdge$kellyUnder <- ukf
+  decision <- list(over = overEdge, under = underEdge)
+  return(decision)
+}
+
