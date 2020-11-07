@@ -5,6 +5,7 @@
 \title{Log optimal allocations among independent bets}
 \usage{
 logOptimalTotals(
+  bankroll = 444,
   tdat = NULL,
   n = 5 * 10^4,
   restraint = 1,
@@ -13,6 +14,8 @@ logOptimalTotals(
 )
 }
 \arguments{
+\item{bankroll}{wealth to bet with}
+
 \item{tdat}{scraped data from \code{espn_live_line}}
 
 \item{n}{number of trials in MC estimations}

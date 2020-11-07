@@ -167,6 +167,7 @@ weekTotalChances <- function(tdat = NULL, n = 5*10^4)
 
 #' Log optimal allocations among independent bets
 #'
+#' @param bankroll wealth to bet with
 #' @param tdat scraped data from \code{espn_live_line}
 #' @param n number of trials in MC estimations
 #' @param restraint percentage of wealth to use
@@ -180,7 +181,7 @@ weekTotalChances <- function(tdat = NULL, n = 5*10^4)
 #' Contained is the model-estimate for the outcome together with the
 #' optimal fraction of wealth to bet.
 #' @export logOptimalTotals
-logOptimalTotals <- function(tdat = NULL, n = 5*10^4, restraint = 1, wager = 110, top = 2)
+logOptimalTotals <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint = 1, wager = 110, top = 2)
 {
   w <- weekTotalChances(tdat, n)
   a <- rep(100/wager, length(w$over))
@@ -188,6 +189,10 @@ logOptimalTotals <- function(tdat = NULL, n = 5*10^4, restraint = 1, wager = 110
 
   overEdge <- w[order(w$over, decreasing = TRUE), ]
   underEdge <- w[order(w$under, decreasing = TRUE), ]
+  if(length(top) > length(w$over))
+  {
+    stop("Use a smaller top-games input")
+  }
   overEdge <- overEdge[1:top,]
   underEdge <- underEdge[1:top, ]
 
@@ -195,6 +200,8 @@ logOptimalTotals <- function(tdat = NULL, n = 5*10^4, restraint = 1, wager = 110
   ukf <- kelly_totals(ps = underEdge$under, a = a, b = b, restraint)
   overEdge$kellyOver <- okf
   underEdge$kellyUnder <- ukf
+  overEdge$bet <- okf*bankroll
+  underEdge$bet <- ukf*bankroll
   decision <- list(over = overEdge, under = underEdge)
   return(decision)
 }
