@@ -206,3 +206,66 @@ logOptimalTotals <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint 
   return(decision)
 }
 
+#' Log optimal allocations among independent bets for NFL
+#'
+#' @param bankroll wealth to bet with
+#' @param tdat scraped data from \code{espn_live_line}
+#' @param n number of trials in MC estimations
+#' @param restraint percentage of wealth to use
+#' @param wager wager to risk for total over/under (110 default)
+#' @param top how many games to bet on
+#'
+#' @description {Kelly-criterion applied to multiple independent bets per
+#' trial.}
+#' @return list of four data.frames \code{over} and \code{under} and \code{fave} and \code{underdog}
+#' both containing the same column names except the last one.
+#' Contained is the model-estimate for the outcome together with the
+#' optimal fraction of wealth to bet.
+#' @export logOptimalNFL
+logOptimalNFL <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint = 1, wager = 110, top = 2)
+{
+  estimates <- nfl_model_chances(tdat, n)
+  m <- nrow(estimates)
+  # Now we must take only the top-games and compute optimal bets
+
+  mlf_a <- rep(100, m)/-estimates$fav_risk
+  mlf_b <- rep(1, m)
+  mlu_a <- estimates$und_win/100
+  mlu_b <- rep(1, m)
+
+  ou_a <- rep(100/wager, m)
+  ou_b <- rep(1, m)
+
+  overEdge <- estimates[order(estimates$over, decreasing = TRUE), ]
+  underEdge <- estimates[order(estimates$under, decreasing = TRUE), ]
+  mlfEdge <- estimates[order(estimates$mlf, decreasing = TRUE), ]
+  mluEdge <- estimates[order(estimates$mlu, decreasing = TRUE), ]
+  if(length(top) > m)
+  {
+    stop("Use a smaller top-games input")
+  }
+  overEdge <- overEdge[1:top,]
+  underEdge <- underEdge[1:top, ]
+  mlfEdge <- mlfEdge[1:top, ]
+  mluEdge <- mluEdge[1:top, ]
+  okf <- kelly_totals(ps = overEdge$over, a = ou_a, b = ou_b, restraint)
+  ukf <- kelly_totals(ps = underEdge$under, a = ou_a, b = ou_b, restraint)
+  mlfkf <- kelly_totals(ps = mlfEdge$mlf, a = mlf_a, b = mlf_b, restraint)
+  mlukf <- kelly_totals(ps = mluEdge$mlu, a = mlu_a, b = mlu_b, restraint)
+
+  overEdge$kellyOver <- okf
+  underEdge$kellyUnder <- ukf
+  mlfEdge$kellyFave <- mlfkf
+  mluEdge$kellyUnder <- mlukf
+
+  overEdge$bet <- okf*bankroll
+  underEdge$bet <- ukf*bankroll
+  mlfEdge$bet <- mlfkf*bankroll
+  mluEdge$bet <- mlukf*bankroll
+
+
+  decision <- list(over = overEdge, under = underEdge, mlf = mlfEdge, mlu = mluEdge)
+  # print(decision)
+  return(decision)
+}
+
