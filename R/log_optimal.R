@@ -240,6 +240,8 @@ logOptimalNFL <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint = 1
   underEdge <- estimates[order(estimates$under, decreasing = TRUE), ]
   mlfEdge <- estimates[order(estimates$mlf, decreasing = TRUE), ]
   mluEdge <- estimates[order(estimates$mlu, decreasing = TRUE), ]
+  psfEdge <- estimates[order(estimates$psf, decreasing = TRUE), ]
+  psuEdge <- estimates[order(estimates$psu, decreasing = TRUE), ]
   if(length(top) > m)
   {
     stop("Use a smaller top-games input")
@@ -248,23 +250,45 @@ logOptimalNFL <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint = 1
   underEdge <- underEdge[1:top, ]
   mlfEdge <- mlfEdge[1:top, ]
   mluEdge <- mluEdge[1:top, ]
+  psfEdge <- psfEdge[1:top, ]
+  psuEdge <- psuEdge[1:top, ]
+
   okf <- kelly_totals(ps = overEdge$over, a = ou_a, b = ou_b, restraint)
   ukf <- kelly_totals(ps = underEdge$under, a = ou_a, b = ou_b, restraint)
   mlfkf <- kelly_totals(ps = mlfEdge$mlf, a = mlf_a, b = mlf_b, restraint)
   mlukf <- kelly_totals(ps = mluEdge$mlu, a = mlu_a, b = mlu_b, restraint)
+  psfkf <- kelly_totals(ps = psfEdge$psf, a = ou_a, b = ou_b, restraint)
+  psukf <- kelly_totals(ps = psuEdge$psu, a = ou_a, b = ou_b, restraint)
 
   overEdge$kellyOver <- okf
   underEdge$kellyUnder <- ukf
   mlfEdge$kellyFave <- mlfkf
   mluEdge$kellyUnder <- mlukf
+  psfEdge$kellyFave <- psfkf
+  psuEdge$kellyUnder <- psukf
 
   overEdge$bet <- okf*bankroll
   underEdge$bet <- ukf*bankroll
   mlfEdge$bet <- mlfkf*bankroll
   mluEdge$bet <- mlukf*bankroll
+  psfEdge$bet <- psfkf*bankroll
+  psuEdge$bet <- psukf*bankroll
 
+  # Remove unnecessary values
+  overEdge <- overEdge[, -c(3:8)]
+  underEdge <- underEdge[, -c(3:8)]
+  mlfEdge <- mlfEdge[, -c(7:11)]
+  mluEdge <- mluEdge[, -c(7:11)]
+  psfEdge <- psfEdge[, -c(3:6, 9:11)]
+  psuEdge <- psuEdge[, -c(3:6, 9:11)]
 
-  decision <- list(over = overEdge, under = underEdge, mlf = mlfEdge, mlu = mluEdge)
+  decision <- list(over = overEdge,
+                   under = underEdge,
+                   mlf = mlfEdge,
+                   mlu = mluEdge,
+                   psf = psfEdge,
+                   psu = psuEdge
+                   )
   # print(decision)
   return(decision)
 }
