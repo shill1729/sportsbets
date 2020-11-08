@@ -7,7 +7,7 @@
 #' team, independently, this function computes estimates of chances of moneyline, point-spread,
 #' and o/u events via Monte-Carlo averaging.}
 #' @return list of model-estimated chances for outcomes in moneyline, point-spread, and o/u
-#' @export nfl_kelly
+#' @export nfl_model_chances
 nfl_model_chances <- function(tdat = NULL, n = 5*10^4)
 {
   if(is.null(tdat))

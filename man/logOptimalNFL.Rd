@@ -6,8 +6,7 @@
 \usage{
 logOptimalNFL(
   bankroll = 444,
-  tdat = NULL,
-  n = 5 * 10^4,
+  estimates = NULL,
   restraint = 1,
   wager = 110,
   top = 2
@@ -16,9 +15,7 @@ logOptimalNFL(
 \arguments{
 \item{bankroll}{wealth to bet with}
 
-\item{tdat}{scraped data from \code{espn_live_line}}
-
-\item{n}{number of trials in MC estimations}
+\item{estimates}{object returned from \code{nfl_model_chances}}
 
 \item{restraint}{percentage of wealth to use}
 

@@ -129,88 +129,13 @@ kelly_totals <- function(ps, a, b, restraint = 1)
   return(kf$par)
 }
 
-#' Compute chances of over/under for a given live line on NFL game week
-#'
-#' @param tdat data returned from \code{espn_nfl_line}
-#' @param n number of variates
-#'
-#' @description {A linear combination of Poisson RVs is used to model the points of each team.}
-#' @return list
-#' @export weekTotalChances
-weekTotalChances <- function(tdat = NULL, n = 5*10^4)
-{
-  if(is.null(tdat))
-  {
-    print("Getting data from ESPN")
-    tdat <- espn_nfl_line()
 
-  }
-  over_chances <- matrix(0, nrow = nrow(tdat))
-  under_chances <- matrix(0, nrow = nrow(tdat))
-  for(i in 1:nrow(tdat))
-  {
-    matchup <- c(team_endpoint(tdat$favs[i]),  team_endpoint(tdat$underdogs[i]))
-    print(matchup)
-    fav_stat <- espn_nfl_scrape(matchup[1])
-    und_stat <- espn_nfl_scrape(matchup[2])
-    ou_est <- nfl_total_cdf(line = tdat$line[i], means = fav_stat$means+und_stat$means, n)
-    over_chances[i] <- ou_est$over
-    under_chances[i] <- ou_est$under
-    Sys.sleep(0.2)
-  }
-  dat <- tdat[, c("favs", "underdogs", "line")]
-  dat$over <- as.numeric(over_chances)
-  dat$under <- as.numeric(under_chances)
-  return(dat)
 
-}
-
-#' Log optimal allocations among independent bets
-#'
-#' @param bankroll wealth to bet with
-#' @param tdat scraped data from \code{espn_live_line}
-#' @param n number of trials in MC estimations
-#' @param restraint percentage of wealth to use
-#' @param wager wager to risk
-#' @param top how many games to bet on
-#'
-#' @description {Kelly-criterion applied to multiple independent bets per
-#' trial.}
-#' @return list of two data.frames \code{over} and \code{under}
-#' both containing the same column names except the last one.
-#' Contained is the model-estimate for the outcome together with the
-#' optimal fraction of wealth to bet.
-#' @export logOptimalTotals
-logOptimalTotals <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint = 1, wager = 110, top = 2)
-{
-  w <- weekTotalChances(tdat, n)
-  a <- rep(100/wager, length(w$over))
-  b <- rep(1, length(w$over))
-
-  overEdge <- w[order(w$over, decreasing = TRUE), ]
-  underEdge <- w[order(w$under, decreasing = TRUE), ]
-  if(length(top) > length(w$over))
-  {
-    stop("Use a smaller top-games input")
-  }
-  overEdge <- overEdge[1:top,]
-  underEdge <- underEdge[1:top, ]
-
-  okf <- kelly_totals(ps = overEdge$over, a = a, b = b, restraint)
-  ukf <- kelly_totals(ps = underEdge$under, a = a, b = b, restraint)
-  overEdge$kellyOver <- okf
-  underEdge$kellyUnder <- ukf
-  overEdge$bet <- okf*bankroll
-  underEdge$bet <- ukf*bankroll
-  decision <- list(over = overEdge, under = underEdge)
-  return(decision)
-}
 
 #' Log optimal allocations among independent bets for NFL
 #'
 #' @param bankroll wealth to bet with
-#' @param tdat scraped data from \code{espn_live_line}
-#' @param n number of trials in MC estimations
+#' @param estimates object returned from \code{nfl_model_chances}
 #' @param restraint percentage of wealth to use
 #' @param wager wager to risk for total over/under (110 default)
 #' @param top how many games to bet on
@@ -222,9 +147,13 @@ logOptimalTotals <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint 
 #' Contained is the model-estimate for the outcome together with the
 #' optimal fraction of wealth to bet.
 #' @export logOptimalNFL
-logOptimalNFL <- function(bankroll = 444, tdat = NULL, n = 5*10^4, restraint = 1, wager = 110, top = 2)
+logOptimalNFL <- function(bankroll = 444, estimates = NULL, restraint = 1, wager = 110, top = 2)
 {
-  estimates <- nfl_model_chances(tdat, n)
+  if(is.null(estimates))
+  {
+    estimates <- nfl_model_chances()
+  }
+
   m <- nrow(estimates)
   # Now we must take only the top-games and compute optimal bets
 
