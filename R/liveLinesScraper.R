@@ -105,7 +105,26 @@ espn_nfl_line <- function()
   dat$live_fpi <- as.numeric(dat$live_fpi)/100
   # Convert all to numeric
   suppressWarnings(dat[, -c(1, 2)] <- apply(dat[,-c(1, 2)], 2, as.numeric))
-  dat <- dat[stats::complete.cases(dat), ] # remove non-posted games
+
+  # If there is an NA on an odd-row index, remove that index and index+1
+  # if there is an NA on an even-row index, remove that index and index-1
+  toDrop <- list()
+  for(i in 1:nrow(dat))
+  {
+    if(is.na(dat$live_lines[i]))
+    {
+      if(i %% 2 == 1)
+      {
+        toDrop[[i]] <- c(i, i+1)
+      } else if(i %% 2 == 0)
+      {
+        toDrop[[i]] <- c(i-1, i)
+      }
+    }
+  }
+  toDrop <- unlist(toDrop)
+  dat <- dat[-toDrop, ]
+
   dat$sentiment <- ifelse(dat$live_lines <= 0, "favorite", "underdog")
   # print(dat)
   # Now we are going to transform the data-set game-wise to be suitable to our log optimal functions
