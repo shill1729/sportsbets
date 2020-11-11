@@ -79,6 +79,12 @@ espn_nfl_line <- function()
 
     w <- xml2::as_list(a[i])
     team_name <- attr(w[[1]]$img, "title")
+    # Sometimes the above does not work? for example Colts
+    if(is.null(team_name))
+    {
+      # It's stored as this now? API sucks.
+      team_name <- w[[1]][[1]]
+    }
     if(team_name == "San Francisco 49ers")
     {
       team_name <- "San Francisco 49ERS"
@@ -98,7 +104,8 @@ espn_nfl_line <- function()
   # Convert to probabilities
   dat$live_fpi <- as.numeric(dat$live_fpi)/100
   # Convert all to numeric
-  dat[, -c(1, 2)] <- apply(dat[,-c(1, 2)], 2, as.numeric)
+  suppressWarnings(dat[, -c(1, 2)] <- apply(dat[,-c(1, 2)], 2, as.numeric))
+  dat <- dat[stats::complete.cases(dat), ] # remove non-posted games
   dat$sentiment <- ifelse(dat$live_lines <= 0, "favorite", "underdog")
   # print(dat)
   # Now we are going to transform the data-set game-wise to be suitable to our log optimal functions
