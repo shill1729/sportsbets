@@ -123,7 +123,11 @@ espn_nfl_line <- function()
     }
   }
   toDrop <- unlist(toDrop)
-  dat <- dat[-toDrop, ]
+  if(!is.null(toDrop))
+  {
+    dat <- dat[-toDrop, ]
+
+  }
 
   dat$sentiment <- ifelse(dat$live_lines <= 0, "favorite", "underdog")
   # print(dat)
