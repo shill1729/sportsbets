@@ -7,7 +7,6 @@
 #' @description {The Skellam distribution for the difference of two independent
 #' Poisson RVs is used to model point-spread in games with goals worth unit-points.}
 #' @return numeric or vector
-#' @export dskellam
 dskellam <- function(k, lambda, mu)
 {
   exp(-(lambda+mu))*(sqrt(lambda/mu)^k)*besselI(2*sqrt(lambda*mu), nu = k)
@@ -22,7 +21,6 @@ dskellam <- function(k, lambda, mu)
 #' @description {The Skellam distribution for the difference of two independent
 #' Poisson RVs is used to model point-spread in games with goals worth unit-points.}
 #' @return numeric or vector
-#' @export pskellam
 pskellam <- function(k, lambda, mu)
 {
   if(length(k) == 1)
@@ -45,10 +43,9 @@ pskellam <- function(k, lambda, mu)
 #' @description {The Skellam distribution for the difference of two independent
 #' Poisson RVs is used to model point-spread in games with goals worth unit-points.}
 #' @return numeric or vector
-#' @export rskellam
 rskellam <- function(n, lambda, mu)
 {
-  rpois(n, lambda)-rpois(n, mu)
+  stats::rpois(n, lambda)-stats::rpois(n, mu)
 }
 
 

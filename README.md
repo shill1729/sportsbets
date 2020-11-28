@@ -4,7 +4,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of sportsbets is to ...
+Currently this package provides an ESPN NFL scraper for statistics of points and their live line together with a multivariate optimizer for betting allocations.
 
 ## Installation
 

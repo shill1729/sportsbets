@@ -21,9 +21,9 @@ nfl_total_cdf <- function(line, means, n = 10^6)
   mextras <- means[3]
   # tds, fgs, safeties and everything else lumped into 1
   point_coef <- c(6, 3, 1)
-  r1 <- rpois(n, mtd)
-  r2 <- rpois(n, mfg)
-  r3 <- rpois(n, mextras)
+  r1 <- stats::rpois(n, mtd)
+  r2 <- stats::rpois(n, mfg)
+  r3 <- stats::rpois(n, mextras)
   r <- cbind(r1, r2, r3)
   # Linear combinations of Poisson RVs
   ps <- apply(r, 1, function(x) t(point_coef)%*%x)
@@ -49,16 +49,16 @@ nfl_moneyline_cdf <- function(fav_means, underdog_means, n = 10^6)
 {
   # tds, fgs, safeties, 1 point, 2 point conversions
   point_coef <- c(6, 3, 1)
-  r1 <- rpois(n, fav_means[1])
-  r2 <- rpois(n, fav_means[2])
-  r3 <- rpois(n, fav_means[3])
+  r1 <- stats::rpois(n, fav_means[1])
+  r2 <- stats::rpois(n, fav_means[2])
+  r3 <- stats::rpois(n, fav_means[3])
   r_fav <- cbind(r1, r2, r3)
   ps_fav <- apply(r_fav, 1, function(x) t(point_coef)%*%x)
 
   # Underdog team
-  r1 <- rpois(n, underdog_means[1])
-  r2 <- rpois(n, underdog_means[2])
-  r3 <- rpois(n, underdog_means[3]) # assume 1 safety on average per game (per both teams)
+  r1 <- stats::rpois(n, underdog_means[1])
+  r2 <- stats::rpois(n, underdog_means[2])
+  r3 <- stats::rpois(n, underdog_means[3]) # assume 1 safety on average per game (per both teams)
   r_und <- cbind(r1, r2, r3)
   ps_und <- apply(r_und, 1, function(x) t(point_coef)%*%x)
   fav_win <- mean((ps_fav > ps_und))
@@ -83,16 +83,16 @@ nfl_spread_cdf <- function(fav_means, underdog_means, spread = 1.5, n = 10^6)
 {
   # tds, fgs, safeties, 1 point, 2 point conversions
   point_coef <- c(6, 3, 1)
-  r1 <- rpois(n, fav_means[1])
-  r2 <- rpois(n, fav_means[2])
-  r3 <- rpois(n, fav_means[3])
+  r1 <- stats::rpois(n, fav_means[1])
+  r2 <- stats::rpois(n, fav_means[2])
+  r3 <- stats::rpois(n, fav_means[3])
   r_fav <- cbind(r1, r2, r3)
   ps_fav <- apply(r_fav, 1, function(x) t(point_coef)%*%x)
 
   # Underdog team
-  r1 <- rpois(n, underdog_means[1])
-  r2 <- rpois(n, underdog_means[2])
-  r3 <- rpois(n, underdog_means[3]) # assume 1 safety on average per game (per both teams)
+  r1 <- stats::rpois(n, underdog_means[1])
+  r2 <- stats::rpois(n, underdog_means[2])
+  r3 <- stats::rpois(n, underdog_means[3]) # assume 1 safety on average per game (per both teams)
   r_und <- cbind(r1, r2, r3)
   ps_und <- apply(r_und, 1, function(x) t(point_coef)%*%x)
   fav_win <- mean((ps_fav - ps_und > spread))
