@@ -159,16 +159,21 @@ logOptimalNFL <- function(bankroll = 444, estimates = NULL, restraint = 1, wager
 
   mlf_a <- rep(100, m)/-estimates$fav_risk
   mlf_b <- rep(1, m)
+  mlf_io <- mlf_b/(mlf_a+mlf_b)
+
   mlu_a <- estimates$und_win/100
   mlu_b <- rep(1, m)
+  mlu_io <- mlu_b/(mlu_a+mlu_b)
 
   ou_a <- rep(100/wager, m)
   ou_b <- rep(1, m)
 
+  # Rank the chances; for ML must use deviation from posted odds
+  # (since they differ)
   overEdge <- estimates[order(estimates$over, decreasing = TRUE), ]
   underEdge <- estimates[order(estimates$under, decreasing = TRUE), ]
-  mlfEdge <- estimates[order(estimates$mlf, decreasing = TRUE), ]
-  mluEdge <- estimates[order(estimates$mlu, decreasing = TRUE), ]
+  mlfEdge <- estimates[order(estimates$mlf-mlf_io, decreasing = TRUE), ]
+  mluEdge <- estimates[order(estimates$mlu-mlu_io, decreasing = TRUE), ]
   psfEdge <- estimates[order(estimates$psf, decreasing = TRUE), ]
   psuEdge <- estimates[order(estimates$psu, decreasing = TRUE), ]
   if(length(top) > m)

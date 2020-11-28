@@ -8,10 +8,10 @@ The goal of sportsbets is to ...
 
 ## Installation
 
-You can install the released version of sportsbets from [CRAN](https://CRAN.R-project.org) with:
+You can install the github version with devtools
 
 ``` r
-install.packages("sportsbets")
+devtools::install_github("shill1729/sportsbets")
 ```
 
 ## Example

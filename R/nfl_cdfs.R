@@ -20,7 +20,7 @@ nfl_total_cdf <- function(line, means, n = 10^6)
   mfg <- means[2]
   mextras <- means[3]
   # tds, fgs, safeties and everything else lumped into 1
-  point_coef <- c(6, 2, 1)
+  point_coef <- c(6, 3, 1)
   r1 <- rpois(n, mtd)
   r2 <- rpois(n, mfg)
   r3 <- rpois(n, mextras)
@@ -48,7 +48,7 @@ nfl_total_cdf <- function(line, means, n = 10^6)
 nfl_moneyline_cdf <- function(fav_means, underdog_means, n = 10^6)
 {
   # tds, fgs, safeties, 1 point, 2 point conversions
-  point_coef <- c(6, 2, 1)
+  point_coef <- c(6, 3, 1)
   r1 <- rpois(n, fav_means[1])
   r2 <- rpois(n, fav_means[2])
   r3 <- rpois(n, fav_means[3])
@@ -82,7 +82,7 @@ nfl_moneyline_cdf <- function(fav_means, underdog_means, n = 10^6)
 nfl_spread_cdf <- function(fav_means, underdog_means, spread = 1.5, n = 10^6)
 {
   # tds, fgs, safeties, 1 point, 2 point conversions
-  point_coef <- c(6, 2, 1)
+  point_coef <- c(6, 3, 1)
   r1 <- rpois(n, fav_means[1])
   r2 <- rpois(n, fav_means[2])
   r3 <- rpois(n, fav_means[3])
