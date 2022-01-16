@@ -19,6 +19,6 @@ dlcpois1(l, lambdas, points, grid = 300)
 numeric
 }
 \description{
-{Numeric integration of PMF of a linear combinatino of Poisson
+{Numeric integration of PMF of a linear combination of Poisson
 RVs via inverting the CF using trapezoid rule.}
 }

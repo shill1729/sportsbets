@@ -33,7 +33,7 @@ phi_X <- Vectorize(phi_X1, "u")
 #' @param grid grid size for numeric integration
 #'
 #'
-#' @description {Numeric integration of PMF of a linear combinatino of Poisson
+#' @description {Numeric integration of PMF of a linear combination of Poisson
 #' RVs via inverting the CF using trapezoid rule.}
 #'
 #' @return numeric
