@@ -1,70 +1,21 @@
-#' Convert team name to team endpoint for ESPN url
-#'
-#' @param team_name team name e.g. "Arizona Cardinals" etc.
-#'
-#' @description {Backend function for converting team name from string to url endpoint.}
-#' @return string
-#' @export team_endpoint
-team_endpoint <- function(team_name)
-{
-  teams <- c("Arizona Cardinals", # ari
-             "Atlanta Falcons", # atl
-             "Baltimore Ravens", #bal
-             "Buffalo Bills", #buf
-             "Carolina Panthers", #car
-             "Chicago Bears", #chi
-             "Cincinnati Bengals", #cin
-             "Cleveland Browns", #cle
-             "Dallas Cowboys", #dal
-             "Denver Broncos", #den
-             "Detroit Lions", #det
-             "Green Bay Packers", #gb 12
-             "Houston Texans", #hou
-             "Indianapolis Colts", #ind
-             "Jacksonville Jaguars", #jax #15
-             "Kansas City Chiefs", #kc 16
-             "Las Vegas Raiders", #lv 17
-             "Los Angeles Chargers", #lac 18
-             "Los Angeles Rams", #lar 19
-             "Miami Dolphins", #mia
-             "Minnesota Vikings", #min
-             "New England Patriots", #ne 22
-             "New Orleans Saints", #no 23
-             "New York Giants", #nyg 24
-             "New York Jets", #nyj 25
-             "Philadelphia Eagles", #phi
-             "Pittsburgh Steelers", #pit
-             "San Francisco 49ERS", #sf 28
-             "Seattle Seahawks", #sea
-             "Tampa Bay Buccaneers", #tb 30
-             "Tennessee Titans", #ten
-             "Washington" #wsh 32
-  )
-  team_index <- which(teams == team_name)
-  first3 <- substring(tolower(teams), 1, 3)
-  first3[c(12, 15, 16, 17, 18, 19, 22, 23, 24, 25, 28, 30, 32)] <- c("gb", "jax", "kc", "lv", "lac", "lar",
-                                                                     "ne", "no", "nyg", "nyj", "sf", "tb", "wsh")
-  return(first3[team_index])
-}
-
-
 #' ESPN stats scraper
 #'
 #' @param team team name, usually first three letters of city or team-name.
 #'
 #' @description {Get mean number of touchdowns and (good) field goals per game for the
 #' current season}
-#' @return list
-#' @export espn_nfl_scrape
-espn_nfl_scrape <- function(team)
+#' @return a named list containing
+#' \itemize{
+#' \item \code{scraped} a list containing the scraped data of
+#' \code{record}, \code{total_tds}, and \code{fg_stats}
+#' \item \code{means} }
+#' @export scrapeStatsNFL
+scrapeStatsNFL <- function(team)
 {
-  # print(paste("Getting", team, "data"))
   url <- "https://www.espn.com/nfl/team/stats/_/type/team/name/"
   url <- paste(url, team, sep = "")
-  # url <- "https://www.pro-football-reference.com/teams/buf/2020.htm"
   resp <- httr::GET(url = url)
   resp_cont <- httr::content(x = resp, type = "text/html", encoding = "UTF-8")
-  # pl <- xml2::as_list(x = resp_cont)
   tbs <- xml2::xml_find_all(resp_cont, "//td")
   lis <- xml2::xml_find_all(resp_cont, "//li")
   # The teams record
@@ -85,10 +36,9 @@ espn_nfl_scrape <- function(team)
   mfgs <- fg_stats[1]/sum(record)
   mextras <- (total_points-total_tds*6-3*fg_stats[1])/sum(record)
   means <- c(tds = mtds, fgs = mfgs, extras = mextras, expected_points = total_points/sum(record))
-
-  # print(means)
   return(list(scraped = scraped, means = means))
 }
+
 
 #' Scrape NFL line data from ESPN
 #'
@@ -104,8 +54,10 @@ espn_nfl_line <- function()
 
   # Team names alternate every other index from 30 onward
   a <- xml2::xml_find_all(resp_cont, "//a")
+  # Rechoose this ai as the first team name in /ne /or /buf etc in 'a' below
+  ai <- 28
   length(a)
-  a[30] # the teams
+  a[28] # the teams
   a[32] #
 
   # Could get the href too for the /nyj/, etc
@@ -166,7 +118,7 @@ espn_nfl_line <- function()
   # Get all of the teams scheduled
   teamsScheduled <- list()
   # index arithmetic is so trivial, there is little point in commenting on it...
-  for(i in 30+2*0:((length(tbs)-1)/6))
+  for(i in ai+2*0:((length(tbs)-1)/6))
   {
 
     w <- xml2::as_list(a[i])
@@ -181,10 +133,10 @@ espn_nfl_line <- function()
     {
       team_name <- "San Francisco 49ERS"
     }
-    teamEnd <- sportsbets::team_endpoint(team_name)
+    teamEnd <- sportsbets::teamEndpointNFL(team_name)
     # print(team_name)
     # print(teamEnd)
-    teamsScheduled[(i-30)/2+1] <- team_name
+    teamsScheduled[(i-ai)/2+1] <- team_name
 
   }
   teamsScheduled <- unlist(teamsScheduled)

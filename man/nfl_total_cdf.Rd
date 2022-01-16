@@ -4,13 +4,15 @@
 \alias{nfl_total_cdf}
 \title{Monte-Carlo estimates of Total points distribution}
 \usage{
-nfl_total_cdf(line, means, n = 10^6)
+nfl_total_cdf(line, means, engine = "cf", n = 10^6)
 }
 \arguments{
 \item{line}{the line}
 
 \item{means}{the vector of mean number of touchdowns and (good) field goals
 of both teams cumulatively}
+
+\item{engine}{"cf" or "mc"}
 
 \item{n}{number of variates to use in Monte-Carlo estimation.}
 }

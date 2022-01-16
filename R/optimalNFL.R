@@ -40,7 +40,8 @@ kellyMultipleBets <- function(ps, a, b, restraint = 1)
       }
     }
   }
-  # print(logargs)
+  print("All possible payoffs:")
+  print(logargs)
   # constrOptim *minimizes* functions, so we use negatives
   g <- function(x)
   {
@@ -53,7 +54,7 @@ kellyMultipleBets <- function(ps, a, b, restraint = 1)
   # for row is 1s for budget equality constraint, then diag matrices
   Amat <- cbind(matrix(rep(-1, m), nrow = m), diag(x = 1, m, m), diag(x = -1, m, m))
   print("Optimizing")
-  kf <- stats::constrOptim(theta = rep(1/(m*3), m),
+  kf <- stats::constrOptim(theta = rep(restraint/(3*m), m),
                            f = g, grad = NULL, ui = t(Amat), ci = bvec)
   print(-kf$value)
   return(kf$par)
