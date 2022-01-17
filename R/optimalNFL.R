@@ -43,7 +43,7 @@ growth_rate <- function(x, ps, a, b)
   # print(logargs)
   # constrOptim *minimizes* functions, so we use negatives
   r <- apply(as.matrix(logargs), 1, function(y) y%*%x)
-  return(-sum(chance_coefs*log(1+r)))
+  return(sum(chance_coefs*log(1+r)))
 }
 
 #' Optimal allocations among many independent bets
@@ -151,26 +151,11 @@ weekly_bets <- function(bankroll, live_line = NULL, chances = NULL, wager = 110)
   growths <- matrix(0, nrow = 6)
   for(i  in 1:6)
   {
-    growths[i] <- -growth_rate(x[,i], ps[[i]], winnings[[i]], risks[[i]])
+    growths[i] <- growth_rate(x[,i], ps[[i]], winnings[[i]], risks[[i]])
   }
   rownames(growths) <- colnames(x)
-
-  dominant_line <- which.max(growths)
-  dominant_game_index <- which.max(x[, dominant_line])
-  dominant_bet <- x[dominant_game_index, dominant_line]
-  dominant_game <- chances[dominant_game_index, 1:2]
-  # Now we can compute the growth-rate from just betting (0,.., b, 0,..0) for the dominant game
-  y <- matrix(0, nrow = m)
-  y[dominant_game_index] <- dominant_bet
-  one_bet_growth_rate <- -growth_rate(y, ps[[dominant_line]], a = winnings[[dominant_game_index]], risks[[dominant_game_index]])
-  # Wrap it all up into one decision
-  decision <- data.frame(type = colnames(x)[dominant_line], dominant_bet, dollars = dominant_bet*bankroll, growth = one_bet_growth_rate)
-  output <- list(line = live_line,
-                 model = chances,
-                 allocations = x,
-                 growth_rates = growths,
-                 dominant_game = dominant_game,
-                 dominant_best = decision
-  )
+  dat <- rbind(x, t(growths))
+  rownames(dat)[nrow(dat)] <- "growth"
+  output <- list(line = live_line, model = chances, allocations = dat)
   return(output)
 }
