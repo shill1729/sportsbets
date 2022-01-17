@@ -108,3 +108,69 @@ kellyMultipleBets <- function(ps, a, b, restraint = 1)
   #print(-kf$value)
   return(kf$par)
 }
+
+#' Weekly bets for all categories of wagers
+#'
+#' @param bankroll initial wealth to bankroll
+#' @param live_line the scraped line from ESPN
+#' @param chances estimated model chances
+#' @param wager the wager for over/under and spreads
+#'
+#' @description {Optimize allocations amongst weekly bets.
+#' }
+#' @return list
+#' @export weekly_bets
+weekly_bets <- function(bankroll, live_line = NULL, chances = NULL, wager = 110)
+{
+  options(scipen=999)
+  if(is.null(live_line))
+  {
+    live_line<- sportsbets::espn_nfl_line()
+  }
+
+  # live_line[2, 4] <- -13.0
+  #live_line[2, 6] <- 285
+  if(is.null(chances))
+  {
+    chances <- sportsbets::nfl_model_chances(live_line)
+  }
+
+  m <- nrow(live_line)
+  ps <- as.list(chances[-c(1:4)])
+  winnings <- list(-100/chances$fav_risk, chances$und_win/100, rep(100/wager, m), rep(100/wager, m), rep(100/wager, m), rep(100/wager, m))
+  risks <- list(rep(1, m), rep(1, m), rep(1, m),  rep(1, m), rep(1, m), rep(1, m))
+  x <- list()
+  for(i in 1:6)
+  {
+    x[[i]] <- kellyMultipleBets(ps[[i]], winnings[[i]], risks[[i]])
+  }
+  names(x) <- names(chances[-c(1:4, 11)])
+  x <- do.call(cbind, x)
+  x <- round(x, 3)
+  x <- data.frame(x)
+  growths <- matrix(0, nrow = 6)
+  for(i  in 1:6)
+  {
+    growths[i] <- -growth_rate(x[,i], ps[[i]], winnings[[i]], risks[[i]])
+  }
+  rownames(growths) <- colnames(x)
+
+  dominant_line <- which.max(growths)
+  dominant_game_index <- which.max(x[, dominant_line])
+  dominant_bet <- x[dominant_game_index, dominant_line]
+  dominant_game <- chances[dominant_game_index, 1:2]
+  # Now we can compute the growth-rate from just betting (0,.., b, 0,..0) for the dominant game
+  y <- matrix(0, nrow = m)
+  y[dominant_game_index] <- dominant_bet
+  one_bet_growth_rate <- -growth_rate(y, ps[[dominant_line]], a = winnings[[dominant_game_index]], risks[[dominant_game_index]])
+  # Wrap it all up into one decision
+  decision <- data.frame(type = colnames(x)[dominant_line], dominant_bet, dollars = dominant_bet*bankroll, growth = one_bet_growth_rate)
+  output <- list(line = live_line,
+                 model = chances,
+                 allocations = x,
+                 growth_rates = growths,
+                 dominant_game = dominant_game,
+                 dominant_best = decision
+  )
+  return(output)
+}
