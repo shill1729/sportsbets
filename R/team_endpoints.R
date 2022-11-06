@@ -183,7 +183,7 @@ nba_endpoints <- function(teamName)
   }
   first3 <- substring(tolower(teams), 1, 3)
   first3[c(3, 10, 13, 14, 19, 20, 21, 24, 27, 29, 30)] <- c("bkn", "gs", "lac", "lal", "no", "ny", "okc", "phx",
-                                                    "sa", "utah", "wash")
+                                                    "sa", "utah", "wsh")
   endpoint <- tolower(gsub(" ", "-", teams))
   endpoints <- paste(first3, "/", endpoint, sep = "")
   return(paste(base_url, endpoints[teamIndex], sep = ""))
