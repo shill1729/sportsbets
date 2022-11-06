@@ -22,10 +22,10 @@ nfl_model_chances <- function(tdat = NULL, n = 5*10^4)
   for(i in 1:nrow(tdat))
   {
 
-    matchup <- c(teamEndpointNFL(tdat$favs[i]),  teamEndpointNFL(tdat$underdogs[i]))
+    matchup <- c(nfl_endpoints(tdat$favs[i]),  nfl_endpoints(tdat$underdogs[i]))
     print(matchup)
-    fav_stat <- scrapeStatsNFL(matchup[1])
-    und_stat <- scrapeStatsNFL(matchup[2])
+    fav_stat <- nfl_stats(matchup[1])
+    und_stat <- nfl_stats(matchup[2])
 
     ml[i, ] <- as.matrix(nfl_moneyline_cdf(fav_stat$means, und_stat$means, n))
     pts[i, ] <- as.matrix(nfl_spread_cdf(fav_stat$means, und_stat$means, abs(tdat$spread[i]), n))
