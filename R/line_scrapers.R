@@ -1,45 +1,3 @@
-#' ESPN stats scraper
-#'
-#' @param team team name, usually first three letters of city or team-name.
-#'
-#' @description {Get mean number of touchdowns and (good) field goals per game for the
-#' current season}
-#' @return a named list containing
-#' \itemize{
-#' \item \code{scraped} a list containing the scraped data of
-#' \code{record}, \code{total_tds}, and \code{fg_stats}
-#' \item \code{means} }
-#' @export scrapeStatsNFL
-scrapeStatsNFL <- function(team)
-{
-  url <- "https://www.espn.com/nfl/team/stats/_/type/team/name/"
-  url <- paste(url, team, sep = "")
-  resp <- httr::GET(url = url)
-  resp_cont <- httr::content(x = resp, type = "text/html", encoding = "UTF-8")
-  tbs <- xml2::xml_find_all(resp_cont, "//td")
-  lis <- xml2::xml_find_all(resp_cont, "//li")
-  # The teams record
-  record <- unlist(xml2::as_list(lis[15]))
-  record <- as.numeric(unlist(strsplit(record, "-")))
-  # Total points
-  total_points <- as.numeric(unlist(xml2::as_list(tbs[length(tbs)-88])))
-  # The teams number of tds
-  total_tds <- as.numeric(unlist(xml2::as_list(tbs[length(tbs)-86])))
-  # Field-goal good--attempts
-  fg_stats <- unlist(xml2::as_list(tbs[length(tbs)-16]))
-  fg_stats <- as.numeric(unlist(strsplit(fg_stats, "-")))
-  rm(resp_cont)
-  rm(tbs)
-  rm(lis)
-  scraped <- list(record = record, total_tds = total_tds, fg_stats = fg_stats)
-  mtds <- total_tds/sum(record)
-  mfgs <- fg_stats[1]/sum(record)
-  mextras <- (total_points-total_tds*6-3*fg_stats[1])/sum(record)
-  means <- c(tds = mtds, fgs = mfgs, extras = mextras, expected_points = total_points/sum(record))
-  return(list(scraped = scraped, means = means))
-}
-
-
 #' Scrape NFL line data from ESPN
 #'
 #' @description {Pulls and formats data from ESPN for current schedules line.}
@@ -133,7 +91,7 @@ espn_nfl_line <- function()
     {
       team_name <- "San Francisco 49ERS"
     }
-    teamEnd <- sportsbets::teamEndpointNFL(team_name)
+    teamEnd <- sportsbets::nfl_endpoints(team_name)
     # print(team_name)
     # print(teamEnd)
     teamsScheduled[(i-ai)/2+1] <- team_name
