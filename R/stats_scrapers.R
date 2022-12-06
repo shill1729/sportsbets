@@ -86,8 +86,8 @@ nba_stats <- function(team)
   # Games played and average number of goals
   # 15 columns.
   # This should work for all teams
-  num_rows <- floor(length(tbs)/15)/2
-  gp_index <- num_rows*15-13
+  num_rows <- floor(length(tbs)/14)/2
+  gp_index <- num_rows*14-19
   # if(team == "Utah Jazz")
   # {
   #   gp_index <- 13*14
@@ -106,7 +106,7 @@ nba_stats <- function(team)
   # }
   gp <- tbs[[gp_index]] # Hopefully every team has the same number of players!
   gp <- as.numeric(unlist(xml2::as_list(gp)))
-  mean_fgs <- tbs[[length(tbs)-13]]
+  mean_fgs <- tbs[[length(tbs)-4]]
   mean_3pts <- tbs[[length(tbs)-10]]
   mean_fts <- tbs[[length(tbs)-7]]
 

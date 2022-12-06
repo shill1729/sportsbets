@@ -31,15 +31,16 @@ phi_X <- Vectorize(phi_X1, "u")
 #' @param lambdas mean rates
 #' @param points coefficients representing points per goal
 #' @param grid grid size for numeric integration
+#' @param a interval bounds for the CF inversion integration
 #'
 #'
 #' @description {Numeric integration of PMF of a linear combination of Poisson
 #' RVs via inverting the CF using trapezoid rule.}
 #'
 #' @return numeric
-dlcpois1 <- function(l, lambdas, points, grid = 300)
+dlcpois1 <- function(l, lambdas, points, grid = 1000, a=2)
 {
-  u <- seq(-1, 1, length.out = grid)
+  u <- seq(-a, a, length.out = grid)
   h <- diff(u)[1]
   x <- sum(c(1, rep(2, length(u)-2), 1)*exp(-1i*u*l)*phi_X(u, lambdas, points))*h/(4*pi)
   return(Re(x))
@@ -51,6 +52,7 @@ dlcpois1 <- function(l, lambdas, points, grid = 300)
 #' @param lambdas mean rates
 #' @param points coefficients representing points per goal
 #' @param grid grid size for numeric integration
+#' @param a interval bound for the CF integral inversion
 #'
 #'
 #' @description {Numeric integration of PMF of a linear combination of Poisson
@@ -68,13 +70,14 @@ dlcpois <- Vectorize(dlcpois1, "l")
 #' @param points coefficients representing points per goal
 #' @param grid grid size for numeric integration
 #' @param engine either "cf" or "mc"
+#' @param a interval bound
 #'
 #'
 #' @description {Numeric integration of CDF of a linear combination of Poisson
 #' RVs via inverting the CF using trapezoid rule.}
 #'
 #' @return numeric
-plcpois1 <- function(l, lambdas, points, grid = 300, engine = "cf")
+plcpois1 <- function(l, lambdas, points, grid = 300, engine = "cf", a=2)
 {
   if(engine == "mc")
   {
@@ -84,7 +87,7 @@ plcpois1 <- function(l, lambdas, points, grid = 300, engine = "cf")
     return(mean(ps <= l))
   } else if(engine == "cf")
   {
-    x <- sum(dlcpois(0:l, lambdas, points, grid))
+    x <- sum(dlcpois(0:l, lambdas, points, grid, a))
     return(x)
   }
 
@@ -97,6 +100,7 @@ plcpois1 <- function(l, lambdas, points, grid = 300, engine = "cf")
 #' @param points coefficients representing points per goal
 #' @param grid grid size for numeric integration
 #' @param engine either "cf" or "mc"
+#' @param a interval bound for CF inversion integration
 #'
 #'
 #' @description {Numeric integration of CDF of a linear combination of Poisson

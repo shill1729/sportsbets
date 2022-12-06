@@ -4,7 +4,7 @@
 \alias{dlcpois1}
 \title{The PMF of a linear combination of Poisson RVs}
 \usage{
-dlcpois1(l, lambdas, points, grid = 300)
+dlcpois1(l, lambdas, points, grid = 1000, a = 2)
 }
 \arguments{
 \item{l}{integer argument, must be positive}
@@ -14,6 +14,8 @@ dlcpois1(l, lambdas, points, grid = 300)
 \item{points}{coefficients representing points per goal}
 
 \item{grid}{grid size for numeric integration}
+
+\item{a}{interval bounds for the CF inversion integration}
 }
 \value{
 numeric

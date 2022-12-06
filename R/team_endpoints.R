@@ -47,7 +47,7 @@ nfl_endpoints <- function(teamName)
              "Seattle Seahawks", #sea
              "Tampa Bay Buccaneers", #tb 30
              "Tennessee Titans", #ten
-             "Washington" #wsh 32
+             "Washington Commanders" #wsh 32
   )
   teamIndex <- which(teams == teamName)
   if(length(teamIndex) == 0)

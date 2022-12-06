@@ -4,7 +4,7 @@
 \alias{plcpois1}
 \title{The CDF of a linear combination of Poisson RVs}
 \usage{
-plcpois1(l, lambdas, points, grid = 300, engine = "cf")
+plcpois1(l, lambdas, points, grid = 300, engine = "cf", a = 2)
 }
 \arguments{
 \item{l}{integer argument, must be positive}
@@ -16,6 +16,8 @@ plcpois1(l, lambdas, points, grid = 300, engine = "cf")
 \item{grid}{grid size for numeric integration}
 
 \item{engine}{either "cf" or "mc"}
+
+\item{a}{interval bound}
 }
 \value{
 numeric
