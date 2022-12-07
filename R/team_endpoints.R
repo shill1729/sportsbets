@@ -88,7 +88,7 @@ nhl_endpoints <- function(teamName)
              "Tampa Bay Lightning", # 7 tb
              "Toronto Maple Leafs",
              "Carolina Hurricanes",
-             "Columbus Blue Jacket", # 10 cbj
+             "Columbus Blue Jackets", # 10 cbj
              "New Jersey Devils", # 11 nj
              "New York Islanders", # 12 nyi
              "New York Rangers", # 13 nyr
